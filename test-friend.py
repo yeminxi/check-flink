@@ -103,7 +103,7 @@ def check_link_accessibility(item):
     return [item, latency]
 
 # 目标JSON数据的URL
-json_url = 'https://blog.liushen.fun/flink_count.json'
+json_url = 'https://ymxblog.us.kg/flink_count.json'
 
 # 发送HTTP GET请求获取JSON数据
 response = requests.get(json_url)
