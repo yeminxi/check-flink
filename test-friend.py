@@ -23,7 +23,7 @@ else:
     print("在服务器上运行，从环境变量中获取API Key")
 
 api_key = os.getenv("LIJIANGAPI_TOKEN")
-api_url_template = "https://api.76.al/api/web/query?key={}&url={}"
+api_url_template = "https://api.nsmao.net/api/web/query?key={}&url={}"
 
 # 代理链接的模板，代理是通过在代理地址后加目标 URL 来请求，代理地址确保以 / 结尾
 proxy_url = os.getenv("PROXY_URL")
@@ -38,6 +38,7 @@ api_request_queue = Queue()
 # API 请求处理函数，确保每秒不超过5次请求
 def handle_api_requests():
     while not api_request_queue.empty():
+        time.sleep(0.2)  # 控制API请求速率，确保每秒不超过5次
         item = api_request_queue.get()
         headers = {"User-Agent": user_agent}
         link = item['link']
@@ -48,7 +49,7 @@ def handle_api_requests():
         api_url = api_url_template.format(api_key, link)
 
         try:
-            response = requests.get(api_url, headers=headers, timeout=15, verify=True)
+            response = requests.get(api_url, headers=headers, timeout=30)
             response_data = response.json()
 
             # 提取API返回的code和exec_time
@@ -153,3 +154,4 @@ with open(output_json_path, 'w', encoding='utf-8') as file:
     }, file, ensure_ascii=False, indent=4)
 
 print(f"检查完成，结果已保存至 '{output_json_path}' 文件。")
+
