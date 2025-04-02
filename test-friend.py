@@ -9,7 +9,7 @@ from queue import Queue
 
 warnings.filterwarnings("ignore", message="Unverified HTTPS request is being made.*")
 
-USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+USER_AGENT = "Mozilla/5.0 appleWebKit/537.36 (Khtml, like Gecko; compatible; MinXiLinks priest/1.0; +https://check.api.418121.xyz/)"
 HEADERS = {"User-Agent": USER_AGENT}
 
 if os.getenv("LIJIANGAPI_TOKEN") is None:
