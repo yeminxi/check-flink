@@ -1,275 +1,249 @@
 <!DOCTYPE html>
 <html lang="zh">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="robots" content="noindex, nofollow" />
-    <meta name="googlebot" content="noindex" />
-    <title>友链状态检测 - GitHub Action 监测</title>
-    <link
-      rel="stylesheet"
-      href="https://chinese-fonts-cdn.deno.dev/packages/jhlst/dist/京華老宋体v1_007/result.css"
-    />
-    <link
-      href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.7.2/css/all.min.css"
-      rel="stylesheet"
-    />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="keywords" content="叶泯希,友链检测,友链状态,友链监测,检测结果,监测结果,叶泯,yemin,叶泯博客,yeminblog,泯希，minxi,泯希博客,minxiblog">
+    <meta name="description" content="叶泯希的友链检测结果，友链状态检测，友链监测结果。">
+    <title>友链状态检测 - 叶泯希</title>
+    <link rel="icon" href="https://blog.418121.xyz/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="https://font.sec.miui.com/font/css?family=MiSans:400,700:MiSans">
     <style>
-      :root {
-        --primary-color: #2c3e50;
-        --secondary-color: #3498db;
-        --accent-color: #e74c3c;
-        --text-color: #34495e;
-        --background-color: #e7f3ff;
-        --code-background-color: #efefef;
-      }
-
-      .poem-background {
-        position: fixed;
-        bottom: calc(50% - 300px);
-        left: 50%;
-        z-index: -1;
-        opacity: 0.15;
-        width: 2000px;
-        text-align: left;
-        color: #93a1a9;
-        pointer-events: none;
-        line-height: 1.8;
-      }
-
-      .poem-background p {
-        margin: 0;
-        font-size: 4rem;
-      }
-
-      body {
-        font-family: "KingHwa_OldSong", "Noto Serif SC", serif;
-        margin: 0;
-        padding: 40px 20px;
-        background-color: var(--background-color);
-        color: var(--text-color);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-      }
-
-      .container {
-        max-width: 900px;
-        width: 100%;
-        padding: 0 20px;
-      }
-
-      .header {
-        text-align: center;
-        margin-bottom: 40px;
-        position: relative;
-      }
-
-      h1 {
-        font-size: 2.8rem;
-        color: var(--primary-color);
-        margin: 20px 0;
-        position: relative;
-      }
-
-      h1::after {
-        content: "";
-        display: block;
-        width: 60%;
-        height: 3px;
-        background: var(--secondary-color);
-        margin: 10px auto 0;
-      }
-
-      .subtitle {
-        font-size: 1.1rem;
-        color: #7f8c8d;
-        max-width: 600px;
-        margin: 0 auto;
-        line-height: 1.6;
-      }
-
-      .total-info {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 15px;
-        margin-top: 30px;
-      }
-
-      @media (min-width: 1200px) {
-        .total-info {
-          grid-template-columns: repeat(4, 1fr);
+        body {
+            font-family: 'MiSans', serif;
+            margin: 0;
+            padding: 0;
+            background: url('https://api.nsmao.net/api/Img/query?key=kSoR7QHDdC8D0LTdX9LSZkbSW0&sort=acg') no-repeat center center fixed; 
+            background-size: cover;
+            color: #333;
         }
-      }
-
-      @media (max-width: 380px) {
-        .total-info {
-          grid-template-columns: repeat(1, 1fr);
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 120px auto;
+            padding: 20px;
+            background-color: transparent;
+            overflow: hidden; 
         }
-      }
-
-      .total-status-card {
-        background: #fff;
-        border-radius: 8px;
-        padding: 15px;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-        text-align: center;
-        font-size: 1rem;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        transition: all 0.2s ease-in-out;
-      }
-
-      .total-status-card span {
-        font-weight: bold;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-
-      .total-status-card:hover {
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      }
-
-      .status-grid {
-        display: grid;
-        gap: 15px;
-        margin-top: 15px;
-      }
-
-      .status-grid.other {
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-      }
-
-      .status-grid.error {
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      }
-
-      .fail_counts {
-        margin-right: 10px;
-        color: #000000a5;
-      }
-
-      .status-card {
-        display: flex;
-        background: #fff;
-        border-radius: 8px;
-        padding: 15px;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-        text-align: center;
-        font-size: 1rem;
-        justify-content: space-between;
-        align-items: center;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-        transition: all 0.2s ease-in-out;
-      }
-
-      .status-card:hover {
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      }
-
-      .status-link {
-        color: var(--primary-color);
-        text-decoration: none;
-        font-weight: bold;
-        transition: all 0.2s ease-in-out;
-        /* 显示为一行，超出显示为省略号 */
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-
-      .status-link:hover {
-        color: var(--secondary-color);
-      }
-
-      .status-dot {
-        display: inline-block;
-        width: 12px;
-        height: 12px;
-        border-radius: 50%;
-        margin-right: 6px;
-        position: relative;
-      }
-
-      .status-dot::before {
-        content: "";
-        position: absolute;
-        top: -4px;
-        left: -4px;
-        width: 20px;
-        height: 20px;
-        border-radius: 50%;
-        animation: pulse 1.5s infinite;
-      }
-
-      @keyframes pulse {
-        0% {
-          transform: scale(1);
-          opacity: 1;
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 2em; /* 增大标题字体 */
+        }
+        .card-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between; /* 更好的卡片布局 */
+            margin-top: 20px;
+        }
+        .card {
+            background-color: rgba(0, 0, 0, 0.822);
+            opacity: 0.822;
+            border-radius: 10px;
+            margin: 10px; /* 减小外边距 */
+            padding: 10px; /* 减小内边距 */
+            flex: 1 1 calc(20% - 10px); /* 调整为一行五个卡片，考虑边距 */
+            transition: transform 0.2s;
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            color: white; /* 卡片内文字颜色设置为白色 */
+            font-size: 14px; /* 字体大小 */
         }
 
-        50% {
-          transform: scale(1.5);
-          opacity: 0.5;
+        .card-item {
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center; 
+            padding: 10px; 
+            text-align: center;
+            margin-left: 30px; 
         }
 
-        100% {
-          transform: scale(1);
-          opacity: 1;
+        .card-item h3 {
+            margin: 0; 
+            font-size: 1.2em; 
         }
-      }
 
-      .status-normal {
-        background: green;
-      }
+        .card-item p {
+            margin-top: 5px; 
+            font-size: 0.9em; 
+            color: rgba(255, 255, 255, 0.822); 
+        }
 
-      .status-normal::before {
-        background-color: rgba(0, 128, 0, 0.2);
-      }
+        .fail-days {
+            margin-right: 10px;
+            color: red;
+            position: relative;
+            margin-left: auto;
+            padding-right: 10px;
+        }
 
-      .status-slow {
-        background: rgb(255, 200, 0);
-      }
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 40px;
+            position: relative;
+            display: inline-block;
+        }
+        .status-dot::before {
+            content: '';
+            position: absolute;
+            top: -4px;
+            left: -4px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            animation: pulse 3s infinite;
+        }
+        .green{
+            background: green;
+        }
+        .yellow {
+            background: yellow;
+        }
+        .red {
+            background: red;
+        }
+        .green::before {
+            background-color: green
+        }
+        .yellow::before {
+            background-color: yellow;
+        }
+        .red::before {
+            background-color: red;
+        }
+        a {
+            font-size: 16px;
+            color: #007bff;
+            text-decoration: none;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
 
-      .status-slow::before {
-        background-color: rgba(255, 174, 0, 0.2);
-      }
+        a:hover {
+            color: #0056b3;
+            text-shadow: 0px 0px 5px rgba(0, 123, 255, 0.822);
+        }
 
-      .status-error {
-        background: red;
-      }
+        .summary-card {
+            display: flex;
+            justify-content: space-between; /* 水平分布内容 */
+            border-radius: 8px;
+            text-align: right;
+            font-size: 1.1em;
+            color: #555;
+        }
 
-      .status-error::before {
-        background-color: rgba(255, 0, 0, 0.2);
-      }
+        .summary-item {
+            background-color: rgba(0, 0, 0, 0.822);
+            opacity: 0.822;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px;
+            flex: 1; /* 每个卡片占据相同宽度 */
+            text-align: center; /* 文本居中 */
+            font-size: 14px;
+            color: pink;
+        }
 
-      footer {
-        margin-top: 50px;
-        padding-top: 30px;
-        border-top: 1px solid #ecf0f1;
-        width: 100%;
-        text-align: center;
-        color: #95a5a6;
-      }
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                opacity: 0.2;
+            }
+            50% {
+                transform: scale(1.5);
+                opacity: 0.5;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 0.2;
+            }
+        }
 
-      footer a {
-        color: #95a5a6;
-        text-decoration: none;
-        transition: all 0.2s ease-in-out;
-      }
+        .info-card {
+            color: #fff;
+            background-color: rgba(0, 0, 0, 0.822);
+            opacity: 0.822;
+            border-radius: 8px; /* 圆角 */
+            padding: 10px 15px; /* 内边距 */
+            margin: 10px 0; /* 上下间距 */
+            text-align: center;
+        }
 
-      footer a:hover {
-        color: var(--secondary-color);
-      }
+        .info-card a {
+            color: #00c8ff; /* 初始链接颜色 */
+            transition: all 0.3s; /* 过渡效果 */
+            text-decoration: none; /* 去掉下划线 */
+            padding: 5px 10px; /* 内边距 */
+            border: 2px solid transparent; /* 初始边框 */
+            border-radius: 4px; /* 圆角 */
+        }
 
-      .github-icon {
+        .info-card a:hover {
+            background-color: rgba(0, 199, 255, 0.3); /* 悬停背景色 */
+            color: #000; /* 悬停时文本颜色 */
+            border: 2px solid #00c8ff; /* 悬停时边框 */
+            text-shadow: 0px 0px 5px rgba(0, 199, 255, 0.822); /* 悬停时文字阴影 */
+        }
+        /* 响应式设计 */
+        @media (max-width: 1024px) {
+            .card {
+                flex: 1 1 calc(45% - 20px); /* 调整为两列布局 */
+            }
+        }
+        @media (max-width: 768px) {
+            .container {
+                margin: 60px auto; 
+            }
+            .card {
+                flex: 1 1 calc(100% - 20px); /* 一列布局 */
+            }
+            .summary-card {
+                font-size: 1em; 
+                flex-direction: column; /* 垂直布局 */
+                align-items: stretch; /* 左对齐 */
+            }
+            .summary-card h3 {
+                margin: 5px 0; /* 每项之间的间距 */
+            }
+        }
+         /* 自适应浅色模式 */
+         @media (prefers-color-scheme: light) {
+            body {
+                background-color: #f0f0f0;
+                color: #000000;
+            }
+            .container {
+                background-color: transparent;
+            }
+            .card {
+                background-color: rgba(255, 255, 255, 0.822);
+                color: #000000;
+                opacity: 0.822;
+            }
+            .info-card {
+		margin-top: 1em;
+		margin-bottom: 0.5em
+                color: #000000;
+                background-color: rgba(255, 255, 255, 0.822);
+                opacity: 0.822;
+            }
+            .summary-item {
+                background-color: rgba(255, 255, 255, 0.822);
+                opacity: 0.822;
+                color: purple;
+            }
+        }
+          .github-icon {
         position: fixed;
         bottom: 20px;
         right: 20px;
         z-index: 1000;
-        background: #fff;
+        background-color: rgba(0, 0, 0, 0.822);
         border-radius: 50%;
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
         width: 45px;
@@ -286,25 +260,16 @@
       }
       .github-icon svg {
         margin-top: 7px;
-        fill: #2c3e50;
+        fill: #fff;
         width: 25px;
         height: 25px;
       }
     </style>
-  </head>
-
-  <body>
-    <div class="poem-background">
-      <p>凤凰台上凤凰游，凤去台空江自流。</p>
-      <p>吴宫花草埋幽径，晋代衣冠成古丘。</p>
-      <p>三山半落青天外，二水中分白鹭洲。</p>
-      <p>总为浮云能蔽日，长安不见使人愁。</p>
-      <p>- —— 节选自 李白《登金陵凤凰台》</p>
-    </div>
-
+</head>
+<body>
     <div class="github-icon">
       <a
-        href="https://github.com/willow-god/check-flink"
+        href="https://github.com/yeminxi"
         target="_blank"
         rel="noopener noreferrer"
       >
@@ -323,214 +288,144 @@
         </svg>
       </a>
     </div>
-
-    <div class="container">
-      <header class="header">
-        <h1>友链状态检测</h1>
-        <p class="subtitle">
-          基于 GitHub Action 监测友链状态，结合 Cloudflare Worker 和 v2.xxapi.cn
-          提高准确率
-        </p>
-        <p class="subtitle">更新时间：<span id="update-time"></span></p>
-      </header>
-
-      <section class="total-info" id="total-info">
-        <div class="total-status-card">
-          <div class="total-status-card-title">
-            <i class="fa-solid fa-users"></i>
-            <span>友链总数</span>
-          </div>
-          <span id="total-links">加载中...</span>
+<div class="container">
+    <div class="info-card"><h1>友链状态检测</h1>🗓️检测时间：<span id="summary">获取中...</span><br /><br />基于 GitHub Action 监测友链状态，结合 Cloudflare Worker 和 api.nsmao.net 提高准确率</div>
+    
+    
+    <div class="summary-card">
+        <div class="summary-item">
+            <p>🪴 花友总数：<span id="total-links">获取中...</span></p>
         </div>
-        <div class="total-status-card">
-          <div class="total-status-card-title">
-            <i class="fa-solid fa-circle-check"></i>
-            <span>正常友链</span>
-          </div>
-          <span id="normal-links">加载中...</span>
+        <div class="summary-item">
+            <p>🟩 正常发挥：<span id="good-links">获取中...</span></p>
         </div>
-        <div class="total-status-card">
-          <div class="total-status-card-title">
-            <i class="fa-solid fa-circle-exclamation"></i>
-            <span>慢速友链</span>
-          </div>
-          <span id="slow-links">加载中...</span>
+        <div class="summary-item">
+            <p>🟨 慢常发挥：<span id="slow-links">获取中...</span></p>
         </div>
-        <div class="total-status-card">
-          <div class="total-status-card-title">
-            <i class="fa-solid fa-circle-xmark"></i>
-            <span>错误友链</span>
-          </div>
-          <span id="error-links">加载中...</span>
+        <div class="summary-item">
+            <p>🟥 坏常发挥：<span id="error-links">获取中...</span></p>
         </div>
-      </section>
-
-      <hr
-        style="
-          width: 100%;
-          margin: 15px 0;
-          border: 0;
-          border-top: 2px solid #00000021;
-        "
-      />
-
-      <h2 class="error-link-h2">失效友链</h2>
-      <section class="status-grid error" id="status-container-error"></section>
-
-      <hr
-        class="error-link-hr"
-        style="
-          width: 100%;
-          margin: 15px 0;
-          border: 0;
-          border-top: 2px solid #00000021;
-        "
-      />
-
-      <h2 class="other-link-h2">其他友链</h2>
-      <section class="status-grid other" id="status-container-other"></section>
-
-      <footer>
-        <script defer src="https://cn.vercount.one/js"></script>
-
-        <div style="margin-bottom: 0.5em">
-          网站总请求量：<span id="vercount_value_site_pv">🤕</span> |
-          独立访客数：<span id="vercount_value_site_uv">🤕</span>
+    </div>    
+    
+    <div class="card-container" id="link-card-container-error"></div>
+    <div class="card-container" id="link-card-container"></div>
+   
+    <div class="info-card">
+	<script defer="" src="https://cn.vercount.one/js"></script>
+    
+        <div style="margin-bottom: 0.5em;margin-top: 1em;">
+          网站总请求量：<span id="vercount_value_site_pv">获取中...</span> |
+          独立访客数：<span id="vercount_value_site_uv">获取中...</span>
         </div>
-
+      
         <div style="margin-bottom: 0.5em">
           Powered by
-          <a
-            href="https://github.com/features/actions"
-            target="_blank"
-            rel="nofollow noopener noreferrer"
-            >GitHub Actions</a
-          >
+          <a href="https://github.com/features/actions" target="_blank" rel="nofollow noopener noreferrer">GitHub Actions</a>
           |
-          <a
-            href="https://workers.cloudflare.com/"
-            target="_blank"
-            rel="nofollow noopener noreferrer"
-            >Cloudflare Workers</a
-          >
+          <a href="https://workers.cloudflare.com/" target="_blank" rel="nofollow noopener noreferrer">Cloudflare Workers</a>
           |
-          <a
-            href="https://xxapi.cn/"
-            target="_blank"
-            rel="nofollow noopener noreferrer"
-            >小小API</a
-          >
+          <a href="https://xxapi.cn/" target="_blank" rel="nofollow noopener noreferrer">小小API</a>
           |
-          <a
-            href="https://api.nsmao.net/"
-            target="_blank"
-            rel="nofollow noopener noreferrer"
-            >奶思猫</a
-          >
+          <a href="https://api.nsmao.net/" target="_blank" rel="nofollow noopener noreferrer">奶思猫</a>
         </div>
 
-        <div>
-          项目地址: <a
-            href="https://github.com/willow-god/check-flink"
-            target="_blank"
-            rel="nofollow noopener noreferrer"
-            >check-flink</a
-          >
-          | MIT License © <span id="year"></span> |
-          <a
-            href="https://www.liushen.fun/"
-            target="_blank"
-            rel="nofollow noopener noreferrer"
-            >LiuShen</a
-          >
+        <div style="margin-bottom: 0.5em">
+          项目地址: <a href="https://github.com/willow-god/check-flink" target="_blank" rel="nofollow noopener noreferrer">check-flink</a>
+          | MIT License © <span id="year">2025</span> |
+          <a href="https://www.liushen.fun/" target="_blank" rel="nofollow noopener noreferrer">LiuShen</a>
         </div>
 
+        <div style="margin-bottom: 1em">
+        	<a href='https://blog.418121.xyz/links/' title="叶泯希的友链页" target="_blank">叶泯希的友链</a>|<a href='https://status.418121.xyz/' title="站点监控页" target="_blank">站点监控</a>
+        </div>
         <script>
           // 动态年份显示
           document.getElementById("year").textContent =
             new Date().getFullYear();
         </script>
-      </footer>
+
     </div>
+</div>
 
-    <script>
-      fetch("/result.json")
-        .then((response) => response.json())
-        .then((data) => {
-          // 更新更新时间
-          const updateTime = data.timestamp;
-          const updateTimeElement = document.getElementById("update-time");
-          updateTimeElement.textContent = updateTime;
-          const container_error = document.getElementById(
-            "status-container-error"
-          );
-          const container_other = document.getElementById(
-            "status-container-other"
-          );
-          let statusHTML = "";
-          const sortedLinks = data.link_status.sort((a, b) =>
-            a.latency === -1 ? -1 : b.latency === -1 ? 1 : b.latency - a.latency
-          );
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    fetch('./result.json')
+        .then(response => response.json())
+        .then(data => {
+            const container_error = document.getElementById('link-card-container-error');
+            const container = document.getElementById('link-card-container');
+            
+            if (!container || !container_error) {
+                console.warn('友链容器元素不存在');
+                return;
+            }
 
-          let totalLinks = 0;
-          let normalLinks = 0;
-          let slowLinks = 0;
-          let errorLinks = 0;
-          let errorLinksHTML = "";
-          let otherLinksHTML = "";
+            let statusHTML = '';
+            const sortedLinks = data.link_status.sort((a, b) => a.latency === -1 ? -1 : b.latency === -1 ? 1 : b.latency - a.latency);
+            let totalLinks = 0;
+            let normalLinks = 0;
+            let slowLinks = 0;
+            let errorLinks = 0;
+            let errorLinksHTML = '';
+            let LinksHTML = '';
+            
+            sortedLinks.forEach(link => {
+                totalLinks++;
+                let statusClass = 'green';
+                let extraInfo = '';
 
-          sortedLinks.forEach((link) => {
-            totalLinks++;
-            let statusClass = "status-normal";
-            let extraInfo = "";
-
-            if (link.latency === -1) {
-              statusClass = "status-error";
-              errorLinks++;
-              extraInfo = `<span class="fail_counts">已持续${link.fail_count}次</span>`;
-              errorLinksHTML += `<div class="status-card">
-                            <a class="status-link" href="${link.link}" target="_blank" rel="noopener noreferrer noreferrer">${link.name}</a>
-                            <div class="fail-details">
+                if (link.latency === -1) {
+                    statusClass = 'red';
+                    errorLinks++;
+                    extraInfo = `<span class="fail-days">失效${link.failed_days}次</span>`;
+                    errorLinksHTML += `<div class="card">
+                            <a class="card-item" href="${link.link}" target="_blank" rel="noopener noreferrer noreferrer">${link.name}</a>
                                 ${extraInfo}
                                 <span class="status-dot ${statusClass}"></span>
-                            </div>
                         </div>`;
-            } else if (link.latency > 4) {
-              statusClass = "status-slow";
-              slowLinks++;
-              otherLinksHTML += `<div class="status-card">
-                        <a class="status-link" href="${link.link}" target="_blank" rel="noopener noreferrer noreferrer">${link.name}</a>
+                } else if (link.latency > 4) {
+                    statusClass = 'yellow';
+                    slowLinks++;
+                    LinksHTML += `<div class="card">
+                        <a class="card-item" href="${link.link}" target="_blank" rel="noopener noreferrer noreferrer">${link.name}</a>
                         <span class="status-dot ${statusClass}"></span>
                     </div>`;
-            } else {
-              normalLinks++;
-              otherLinksHTML += `<div class="status-card">
-                        <a class="status-link" href="${link.link}" target="_blank" rel="noopener noreferrer noreferrer">${link.name}</a>
+                } else {
+                    normalLinks++;
+                    LinksHTML += `<div class="card">
+                        <a class="card-item" href="${link.link}" target="_blank" rel="noopener noreferrer noreferrer">${link.name}</a>
                         <span class="status-dot ${statusClass}"></span>
                     </div>`;
+                }
+                
+            });
+
+            const safeSetText = (id, text) => {
+                const el = document.getElementById(id);
+                el && (el.textContent = text);
+            };
+
+            safeSetText('total-links', totalLinks);
+            safeSetText('good-links', normalLinks);
+            safeSetText('slow-links', slowLinks);
+            safeSetText('error-links', errorLinks);
+            
+            if (errorLinksHTML) {
+                container_error.innerHTML = errorLinksHTML;
+            } else if (container_error.parentElement) {
+                container_error.parentElement.remove();
             }
-          });
 
-          if (errorLinksHTML) {
-            container_error.innerHTML = errorLinksHTML;
-          } else {
-            // 如果没有错误链接，移除标题和分割线自身（而不是它们的父级）
-            const errorTitle = document.querySelector(".error-link-h2");
-            const errorHr = document.querySelector(".error-link-hr");
-            if (errorTitle) errorTitle.remove();
-            if (errorHr) errorHr.remove();
-          }
-
-          if (otherLinksHTML) {
-            container_other.innerHTML = otherLinksHTML;
-          }
-
-          document.getElementById("total-links").textContent = totalLinks;
-          document.getElementById("normal-links").textContent = normalLinks;
-          document.getElementById("slow-links").textContent = slowLinks;
-          document.getElementById("error-links").textContent = errorLinks;
+            LinksHTML && (container.innerHTML = LinksHTML);
+            
+            const summaryEl = document.getElementById('summary');
+            summaryEl && (summaryEl.textContent = data.timestamp);
         })
-        .catch((error) => console.error("Error loading status:", error));
-    </script>
-  </body>
+        .catch(error => console.error('加载数据失败:', error));
+});
+
+</script>
+
+
+</body>
 </html>
