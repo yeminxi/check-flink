@@ -19,7 +19,7 @@ logging.basicConfig(
 
 warnings.filterwarnings("ignore", message="Unverified HTTPS request is being made.*")
 
-USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+USER_AGENT = "Mozilla/5.0 appleWebKit/537.36 (Khtml, like Gecko; compatible; MinXiLinks priest/1.0; +https://check.api.418121.xyz/)"
 HEADERS = {"User-Agent": USER_AGENT}
 PROXY_URL_TEMPLATE = f"{os.getenv('PROXY_URL')}{{}}" if os.getenv("PROXY_URL") else None
 SOURCE_URL = os.getenv("SOURCE_URL", "./link.csv")  # 默认本地文件
