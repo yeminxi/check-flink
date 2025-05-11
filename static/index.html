@@ -377,7 +377,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (link.latency === -1) {
                     statusClass = 'red';
                     errorLinks++;
-                    extraInfo = `<span class="fail-days">失效${link.failed_days}次</span>`;
+                    extraInfo = `<span class="fail-days">失效${link.fail_count}次</span>`;
                     errorLinksHTML += `<div class="card">
                             <a class="card-item" href="${link.link}" target="_blank" rel="noopener noreferrer noreferrer">${link.name}</a>
                                 ${extraInfo}
