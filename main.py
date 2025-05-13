@@ -23,7 +23,7 @@ warnings.filterwarnings("ignore", message="Unverified HTTPS request is being mad
 HEADERS = {
     "User-Agent": (
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-        "AppleWebKit/537.36 (KHTML, like Gecko;MinXiLinks priest/1.0; +https://check.api.418121.xyz/)) "
+        "AppleWebKit/537.36 (KHTML, like Gecko;MinXiLinks priest/1.0; +https://check.api.418121.xyz/) "
         "Chrome/123.0.0.0 Safari/537.36 "
         "(check-flink/1.0; +https://github.com/willow-god/check-flink)"
     ),
@@ -34,20 +34,18 @@ HEADERS = {
     "X-Check-Flink": "1.0"
 }
 
-def is_url(path):
-    return urlparse(path).scheme in ("http", "https")
+RAW_HEADERS = {  # 仅用于获取原始数据，防止接收到Accept-Language等头部导致乱码
+    "User-Agent": (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/123.0.0.0 Safari/537.36 "
+        "(check-flink/1.0; +https://github.com/willow-god/check-flink)"
+    ),
+    "X-Check-Flink": "1.0"
+}
 
-# 获取环境变量配置
-PROXY_URL = os.getenv("PROXY_URL", None)
-if PROXY_URL and not is_url(PROXY_URL):
-    logging.warning("代理 URL 格式错误，使用默认值 None")
-    PROXY_URL = None
-
-PROXY_URL_TEMPLATE = f"{PROXY_URL}{{}}" if PROXY_URL else None
-SOURCE_URL = os.getenv("SOURCE_URL", "./link.csv")  # 默认本地文件，获取环境变量
-if SOURCE_URL and not is_url(SOURCE_URL):
-    logging.warning("未提供数据源 URL，使用默认值 ./link.csv")
-    SOURCE_URL = "./link.csv"
+PROXY_URL_TEMPLATE = f"{os.getenv('PROXY_URL')}{{}}" if os.getenv("PROXY_URL") else None
+SOURCE_URL = os.getenv("SOURCE_URL", "./link.csv")  # 默认本地文件
 RESULT_FILE = "./result.json"
 api_request_queue = Queue()
 
@@ -57,11 +55,11 @@ if PROXY_URL_TEMPLATE:
 else:
     logging.info("未提供代理 URL")
 
-def request_url(session, url, desc="", timeout=15, verify=True, **kwargs):
+def request_url(session, url, headers=HEADERS, desc="", timeout=15, verify=True, **kwargs):
     """统一封装的 GET 请求函数"""
     try:
         start_time = time.time()
-        response = session.get(url, headers=HEADERS, timeout=timeout, verify=verify, **kwargs)
+        response = session.get(url, headers=headers, timeout=timeout, verify=verify, **kwargs)
         latency = round(time.time() - start_time, 2)
         return response, latency
     except requests.RequestException as e:
@@ -81,12 +79,15 @@ def save_results(data):
     with open(RESULT_FILE, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=4)
 
+def is_url(path):
+    return urlparse(path).scheme in ("http", "https")
+
 def fetch_origin_data(origin_path):
     logging.info(f"正在读取数据源: {origin_path}")
     try:
         if is_url(origin_path):
             with requests.Session() as session:
-                response, _ = request_url(session, origin_path, desc="数据源")
+                response, _ = request_url(session, origin_path, headers=RAW_HEADERS, desc="数据源")
                 content = response.text if response else ""
         else:
             with open(origin_path, "r", encoding="utf-8") as f:
@@ -139,7 +140,7 @@ def handle_api_requests(session):
         item = api_request_queue.get()
         link = item['link']
         api_url = f"https://v2.xxapi.cn/api/status?url={link}"
-        response, _ = request_url(session, api_url, desc="API 检查", timeout=30)
+        response, _ = request_url(session, api_url,headers=RAW_HEADERS, desc="API 检查", timeout=30)
         if response:
             try:
                 res_json = response.json()
