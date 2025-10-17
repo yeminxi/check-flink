@@ -289,7 +289,7 @@ def main():
             "inaccessible_count": total - accessible,
             "total_count": total,
             "has_author_link_count": has_author_count,  # 新增统计
-            "author_url": AUTHOR_URL,  # 记录使用的作者URL
+            "author_url": AUTHOR_URLS,  # 记录使用的作者URL
             "link_status": link_status
         }
 
