@@ -56,7 +56,7 @@ if PROXY_URL_TEMPLATE:
 else:
     logging.info("未提供代理 URL")
 
-if AUTHOR_URL:
+if AUTHOR_URLS:
     logging.info("作者 URL: %s", AUTHOR_URLS)
 else:
     logging.warning("未提供作者 URL，将跳过友链页面检测")
@@ -188,7 +188,7 @@ def check_link(item, session):
             logging.info(f"[{method}] 成功访问: {link} ，延迟 {latency} 秒")
             
             # 如果链接可达且有linkpage字段，检测友链页面
-            if 'linkpage' in item and item['linkpage'] and AUTHOR_URL:
+            if 'linkpage' in item and item['linkpage'] and AUTHOR_URLS:
                 has_author_link = check_author_link_in_page(session, item['linkpage'])
             
             return item, latency, has_author_link
@@ -218,7 +218,7 @@ def handle_api_requests(session):
                     item['latency'] = latency
                     
                     # 如果API检测成功且有linkpage字段，检测友链页面
-                    if 'linkpage' in item and item['linkpage'] and AUTHOR_URL:
+                    if 'linkpage' in item and item['linkpage'] and AUTHOR_URLS:
                         has_author_link = check_author_link_in_page(session, item['linkpage'])
                 else:
                     logging.warning(f"[API] 状态异常: {link} -> [{res_json.get('code')}, {res_json.get('data')}]")
