@@ -47,7 +47,8 @@ RAW_HEADERS = {  # 仅用于获取原始数据，防止接收到Accept-Language�
 PROXY_URL_TEMPLATE = f"{os.getenv('PROXY_URL')}{{}}" if os.getenv("PROXY_URL") else None
 SOURCE_URL = os.getenv("SOURCE_URL", "https://blog.418121.xyz/flink_count.json")  # 默认本地文件
 RESULT_FILE = "./result.json"
-AUTHOR_URL = os.getenv("AUTHOR_URL", "blog.418121.xyz")  # 作者URL，用于检测反链
+AUTHOR_URLS = os.getenv("AUTHOR_URL", "blog.418121.xyz,yeminxi.github.io").split(',') # 作者URL，用于检测反链
+AUTHOR_URLS = [url.strip() for url in AUTHOR_URLS if url.strip()]
 api_request_queue = Queue()
 
 if PROXY_URL_TEMPLATE:
@@ -56,7 +57,7 @@ else:
     logging.info("未提供代理 URL")
 
 if AUTHOR_URL:
-    logging.info("作者 URL: %s", AUTHOR_URL)
+    logging.info("作者 URL: %s", AUTHOR_URLS)
 else:
     logging.warning("未提供作者 URL，将跳过友链页面检测")
 
@@ -88,61 +89,50 @@ def is_url(path):
     return urlparse(path).scheme in ("http", "https")
 
 def check_author_link_in_page(session, linkpage_url):
-    """检测友链页面是否包含作者链接"""
-    if not AUTHOR_URL:
+    """检测友链页面是否包含任一作者链接"""
+    if not AUTHOR_URLS:
         return False
     
     response, _ = request_url(session, linkpage_url, headers=RAW_HEADERS, desc="友链页面检测")
     if not response:
         return False
     
-    # 处理作者URL，确保有协议号
-    author_url = AUTHOR_URL
-    if not author_url.startswith(('http://', 'https://')):
-        author_url = 'https://' + author_url
-    
-    # 生成各种可能的URL变体
-    author_variants = [
-        author_url,
-        author_url.replace('https://', 'http://'),
-        author_url.replace('https://', '//'),
-        author_url.replace('https://', ''),
-        AUTHOR_URL,  # 原始值（可能没有协议号）
-        '//' + AUTHOR_URL,
-        'https://' + AUTHOR_URL,
-        'http://' + AUTHOR_URL
-    ]
-    
-    # 去重
-    author_variants = list(set(author_variants))
-    
     content = response.text
-    found_in_href = False
-    found_as_text = False
     
-    # 检查每种变体
-    for variant in author_variants:
-        # 检查是否在href属性中
-        if f'href="{variant}"' in content or \
-           f"href='{variant}'" in content or \
-           f'href="{variant}/"' in content or \
-           f"href='{variant}/'" in content:
-            found_in_href = True
-            break
+    for author_url in AUTHOR_URLS:
+        # 为每个URL生成变体（保持原有逻辑）
+        if not author_url.startswith(('http://', 'https://')):
+            base_url = 'https://' + author_url
+        else:
+            base_url = author_url
         
-        # 检查是否作为文本出现
-        if variant in content:
-            found_as_text = True
+        author_variants = [
+            base_url,
+            base_url.replace('https://', 'http://'),
+            base_url.replace('https://', '//'),
+            base_url.replace('https://', ''),
+            author_url,
+            '//' + author_url,
+            'https://' + author_url,
+            'http://' + author_url
+        ]
+        
+        author_variants = list(set(author_variants))
+        
+        for variant in author_variants:
+            if (f'href="{variant}"' in content or 
+                f"href='{variant}'" in content or 
+                f'href="{variant}/"' in content or 
+                f"href='{variant}/'" in content):
+                logging.info(f"友链页面 {linkpage_url} 中找到作者链接: {variant}")
+                return True
+            
+            if variant in content:
+                logging.info(f"友链页面 {linkpage_url} 中包含作者URL文本: {variant}")
+                return True
     
-    if found_in_href:
-        logging.info(f"友链页面 {linkpage_url} 中找到作者链接: {author_url}")
-        return True
-    elif found_as_text:
-        logging.info(f"友链页面 {linkpage_url} 中包含作者URL文本但非链接")
-        return True
-    else:
-        logging.info(f"友链页面 {linkpage_url} 中未找到作者链接")
-        return False
+    logging.info(f"友链页面 {linkpage_url} 中未找到任何作者链接")
+    return False
 
 def fetch_origin_data(origin_path):
     logging.info(f"正在读取数据源: {origin_path}")
