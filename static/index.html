@@ -300,10 +300,10 @@
             <p>🟩 正常发挥：<span id="good-links">获取中...</span></p>
         </div>
         <div class="summary-item">
-            <p>🟨 慢常发挥：<span id="slow-links">获取中...</span></p>
+            <p>🟥 坏常发挥：<span id="error-links">获取中...</span></p>
         </div>
         <div class="summary-item">
-            <p>🟥 坏常发挥：<span id="error-links">获取中...</span></p>
+            <p>🔗 存在反链：<span id="black-links">获取中...</span></p>
         </div>
     </div>    
     
@@ -349,7 +349,7 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    fetch('./result.json')
+    fetch('/result.json')
         .then(response => response.json())
         .then(data => {
             const container_error = document.getElementById('link-card-container-error');
@@ -366,6 +366,7 @@ document.addEventListener('DOMContentLoaded', function() {
             let normalLinks = 0;
             let slowLinks = 0;
             let errorLinks = 0;
+            let backlinkCount = 0;
             let errorLinksHTML = '';
             let LinksHTML = '';
             
@@ -373,7 +374,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 totalLinks++;
                 let statusClass = 'green';
                 let extraInfo = '';
+                let backlinkIcon = "";
 
+                // --- 修改点 1: 增加对 linkpage 是否为空字符串的检查 ---
+                // 处理反链状态
+                if (link.linkpage && link.linkpage.trim() !== '' && link.has_author_link !== undefined) {
+                if (link.has_author_link) {
+                    backlinkIcon = `<a href="${link.linkpage}" target="_blank" rel="noopener noreferrer" class="backlink-status" title="查看友链页面">
+                                    <i class="fa-solid fa-heart-circle-check backlink-icon backlink-true"></i>
+                                    </a>`;
+                    backlinkCount++;
+                } else {
+                    backlinkIcon = `<a href="${link.linkpage}" target="_blank" rel="noopener noreferrer" class="backlink-status" title="查看友链页面">
+                                    <i class="fa-solid fa-heart-circle-xmark backlink-icon backlink-false"></i>
+                                    </a>`;
+                }
+                }
                 if (link.latency === -1) {
                     statusClass = 'red';
                     errorLinks++;
@@ -409,6 +425,7 @@ document.addEventListener('DOMContentLoaded', function() {
             safeSetText('good-links', normalLinks);
             safeSetText('slow-links', slowLinks);
             safeSetText('error-links', errorLinks);
+            safeSetText('black-links', backlinkCount);
             
             if (errorLinksHTML) {
                 container_error.innerHTML = errorLinksHTML;
